@@ -2,7 +2,7 @@
   "name": "cleaner-work-invoice",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://Lucho122.github.io/cleaner-work-invoice",
+  "homepage": "https://lucho122.github.io/cleaner-work-invoice",
   "dependencies": {
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
