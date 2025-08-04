@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/cleaner-work-invoice/static/css/main.ddcbf7e7.css",
+    "main.js": "/cleaner-work-invoice/static/js/main.2d10a8e5.js",
+    "index.html": "/cleaner-work-invoice/index.html",
+    "main.ddcbf7e7.css.map": "/cleaner-work-invoice/static/css/main.ddcbf7e7.css.map",
+    "main.2d10a8e5.js.map": "/cleaner-work-invoice/static/js/main.2d10a8e5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.ddcbf7e7.css",
+    "static/js/main.2d10a8e5.js"
+  ]
+}
