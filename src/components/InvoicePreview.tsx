@@ -59,7 +59,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData, onClose })
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <p className="text-white font-medium">
-                        {service.type.charAt(0).toUpperCase() + service.type.slice(1)} Cleaning
+                        {service.serviceType.charAt(0).toUpperCase() + service.serviceType.slice(1)} Cleaning
                       </p>
                                              <p className="text-gray-400 text-sm">
                          {service.date} - {service.building || 'No building selected'}
@@ -73,7 +73,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData, onClose })
                     </div>
                     <div className="text-right">
                       <p className="text-white font-medium">
-                        ${service.serviceAmount.toFixed(2)}
+                        ${service.amount.toFixed(2)}
                       </p>
                       {service.itemsCost > 0 && (
                         <p className="text-gray-400 text-sm">

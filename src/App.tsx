@@ -1,370 +1,319 @@
 import React, { useState } from 'react';
+import './App.css';
 import Logo from './components/Logo';
 import CleanerInfo from './components/CleanerInfo';
 import ServiceTypeSelector from './components/ServiceTypeSelector';
-
+import DateGroupAccordion from './components/DateGroupAccordion';
+import GoogleSheetsStatus from './components/GoogleSheetsStatus';
 import ActionButtons from './components/ActionButtons';
-import InvoicePreview from './components/InvoicePreview';
-import FormSection from './components/FormSection';
-import Toast from './components/Toast';
-import SummaryCard from './components/SummaryCard';
-import CheckinModal from './components/CheckinModal';
-import DateServiceGroup from './components/DateServiceGroup';
-import CheckinServicesSection from './components/CheckinServicesSection';
-import { Cleaner, CleaningService, CheckinService, ServiceType, InvoiceData } from './types';
+import { Cleaner, CleaningService, CheckinService, ServiceType, DateGroup } from './types';
+import { Calendar, Plus } from 'lucide-react';
 
-const App: React.FC = () => {
+function App() {
   const [cleaner, setCleaner] = useState<Cleaner>({
-    id: '1',
+    id: '',
     name: '',
-    startDate: '2025-08-03',
-    endDate: '2025-08-17'
+    startDate: '',
+    endDate: ''
   });
-
   const [selectedServiceType, setSelectedServiceType] = useState<ServiceType>('normal');
-  const [showInvoicePreview, setShowInvoicePreview] = useState(false);
-  const [showCheckinModal, setShowCheckinModal] = useState(false);
+  const [dateGroups, setDateGroups] = useState<DateGroup[]>([]);
+  const [isGoogleSheetsConnected, setIsGoogleSheetsConnected] = useState<boolean | null>(null);
 
-  const [checkinServices, setCheckinServices] = useState<CheckinService[]>([]);
-  const [toast, setToast] = useState<{
-    type: 'success' | 'error' | 'info' | 'warning';
-    message: string;
-    isVisible: boolean;
-  }>({
-    type: 'info',
-    message: '',
-    isVisible: false
-  });
-  const [services, setServices] = useState<CleaningService[]>([
-    {
-      id: '1',
-      type: 'normal',
-      date: '2025-08-03',
-      building: '',
-      unit: '',
-      serviceAmount: 0,
-      cleaningWithPartner: false,
-      partnerName: '',
-      extraTime: 'No extra time',
-      extrasDescription: '',
-      purchasedItems: '',
-      itemsCost: 0
-    }
-  ]);
+  // Generate unique IDs
+  const generateId = () => Math.random().toString(36).substr(2, 9);
 
-
-
-  const calculateExtraTimeCost = (extraTime: string) => {
-    if (extraTime === 'No extra time') return 0;
-    
-    const timeMap: { [key: string]: number } = {
-      '30 minutes': 30,
-      '1 hour': 60,
-      '1.5 hours': 90,
-      '2 hours': 120
+  // Date Group Management
+  const addDateGroup = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const newGroup: DateGroup = {
+      id: generateId(),
+      date: today,
+      cleaningServices: [],
+      checkinServices: []
     };
-    
-    const minutes = timeMap[extraTime] || 0;
-    const quarterHours = Math.ceil(minutes / 15);
-    return quarterHours * 4.5;
+    setDateGroups([...dateGroups, newGroup]);
   };
 
-  const handleServiceChange = (serviceId: string, updatedService: CleaningService) => {
-    setServices(prev => prev.map(service => 
-      service.id === serviceId ? updatedService : service
+  const updateDateGroup = (groupId: string, updates: Partial<DateGroup>) => {
+    setDateGroups(dateGroups.map(group => 
+      group.id === groupId ? { ...group, ...updates } : group
     ));
   };
 
-  const handleRemoveService = (serviceId: string) => {
-    setServices(prev => prev.filter(service => service.id !== serviceId));
+  const removeDateGroup = (groupId: string) => {
+    setDateGroups(dateGroups.filter(group => group.id !== groupId));
   };
 
-
-
-  const addNewDate = () => {
-    // Get the latest date from existing services or use start date
-    const existingDates = services.map(s => s.date).sort();
-    const latestDate = existingDates.length > 0 ? existingDates[existingDates.length - 1] : cleaner.startDate;
-    
-    // Generate next date (add one day to the latest date)
-    const nextDate = new Date(latestDate);
-    nextDate.setDate(nextDate.getDate() + 1);
-    const newDateString = nextDate.toISOString().split('T')[0];
-    
-    // Validate that the new date is within the cleaner's period
-    const newDateObj = new Date(newDateString);
-    const endDateObj = new Date(cleaner.endDate);
-    
-    if (newDateObj > endDateObj) {
-      showToast('error', 'Cannot add date beyond the end date of the period');
-      return;
-    }
-    
-    // Add a new date with one initial service
+  // Service Management within Date Groups
+  const addCleaningService = (groupId: string) => {
     const newService: CleaningService = {
-      id: Date.now().toString(),
-      type: selectedServiceType,
-      date: newDateString,
+      id: generateId(),
+      date: '', // Will be set from the group
       building: '',
       unit: '',
-      serviceAmount: 0,
+      serviceType: selectedServiceType,
       cleaningWithPartner: false,
       partnerName: '',
       extraTime: 'No extra time',
       extrasDescription: '',
       purchasedItems: '',
-      itemsCost: 0
+      itemsCost: 0,
+      amount: 0,
+      isValid: false
     };
-    setServices(prev => [...prev, newService]);
-    showToast('success', `Added new date: ${newDateString}`);
+
+    setDateGroups(dateGroups.map(group => {
+      if (group.id === groupId) {
+        return {
+          ...group,
+          cleaningServices: [...group.cleaningServices, newService]
+        };
+      }
+      return group;
+    }));
   };
 
-  const addServiceToDate = (date: string) => {
-    const newService: CleaningService = {
-      id: Date.now().toString(),
-      type: selectedServiceType,
-      date: date,
+  const addCheckinService = (groupId: string) => {
+    const newService: CheckinService = {
+      id: generateId(),
+      date: '', // Will be set from the group
       building: '',
       unit: '',
-      serviceAmount: 0,
-      cleaningWithPartner: false,
-      partnerName: '',
-      extraTime: 'No extra time',
-      extrasDescription: '',
-      purchasedItems: '',
-      itemsCost: 0
+      serviceType: selectedServiceType,
+      amount: 0,
+      isValid: false
     };
-    setServices(prev => [...prev, newService]);
+
+    setDateGroups(dateGroups.map(group => {
+      if (group.id === groupId) {
+        return {
+          ...group,
+          checkinServices: [...group.checkinServices, newService]
+        };
+      }
+      return group;
+    }));
   };
 
-  const removeDate = (date: string) => {
-    setServices(prev => prev.filter(service => service.date !== date));
-    showToast('info', `Removed all services for ${new Date(date).toLocaleDateString()}`);
+  const updateCleaningService = (groupId: string, serviceIndex: number, updatedService: CleaningService) => {
+    setDateGroups(dateGroups.map(group => {
+      if (group.id === groupId) {
+        const updatedServices = [...group.cleaningServices];
+        updatedServices[serviceIndex] = {
+          ...updatedService,
+          date: group.date // Ensure service inherits group date
+        };
+        return {
+          ...group,
+          cleaningServices: updatedServices
+        };
+      }
+      return group;
+    }));
   };
 
-  const updateDate = (oldDate: string, newDate: string) => {
-    setServices(prev => prev.map(service => 
-      service.date === oldDate ? { ...service, date: newDate } : service
-    ));
-    showToast('success', `Date updated from ${new Date(oldDate).toLocaleDateString()} to ${new Date(newDate).toLocaleDateString()}`);
+  const updateCheckinService = (groupId: string, serviceIndex: number, updatedService: CheckinService) => {
+    setDateGroups(dateGroups.map(group => {
+      if (group.id === groupId) {
+        const updatedServices = [...group.checkinServices];
+        updatedServices[serviceIndex] = {
+          ...updatedService,
+          date: group.date // Ensure service inherits group date
+        };
+        return {
+          ...group,
+          checkinServices: updatedServices
+        };
+      }
+      return group;
+    }));
   };
 
-  // Check-in Services Management
-  const handleCheckinServiceChange = (serviceId: string, updatedService: CheckinService) => {
-    setCheckinServices(prev => prev.map(service => 
-      service.id === serviceId ? updatedService : service
-    ));
+  const removeCleaningService = (groupId: string, serviceIndex: number) => {
+    setDateGroups(dateGroups.map(group => {
+      if (group.id === groupId) {
+        const updatedServices = group.cleaningServices.filter((_, index) => index !== serviceIndex);
+        return {
+          ...group,
+          cleaningServices: updatedServices
+        };
+      }
+      return group;
+    }));
   };
 
-  const handleRemoveCheckinService = (serviceId: string) => {
-    setCheckinServices(prev => prev.filter(service => service.id !== serviceId));
-    showToast('info', 'Check-in service removed');
+  const removeCheckinService = (groupId: string, serviceIndex: number) => {
+    setDateGroups(dateGroups.map(group => {
+      if (group.id === groupId) {
+        const updatedServices = group.checkinServices.filter((_, index) => index !== serviceIndex);
+        return {
+          ...group,
+          checkinServices: updatedServices
+        };
+      }
+      return group;
+    }));
   };
 
-  const addCheckinService = () => {
-    const newCheckinService: CheckinService = {
-      id: Date.now().toString(),
-      type: 'checkin',
-      date: new Date().toISOString().split('T')[0],
-      building: '',
-      unit: '',
-      amount: 0
-    };
-    setCheckinServices(prev => [...prev, newCheckinService]);
-    showToast('success', 'Check-in service added');
+  const handleDateChange = (groupId: string, newDate: string) => {
+    setDateGroups(dateGroups.map(group => {
+      if (group.id === groupId) {
+        // Update all services in this group to use the new date
+        const updatedCleaningServices = group.cleaningServices.map(service => ({
+          ...service,
+          date: newDate
+        }));
+        const updatedCheckinServices = group.checkinServices.map(service => ({
+          ...service,
+          date: newDate
+        }));
+        
+        return {
+          ...group,
+          date: newDate,
+          cleaningServices: updatedCleaningServices,
+          checkinServices: updatedCheckinServices
+        };
+      }
+      return group;
+    }));
   };
 
-  const showToast = (type: 'success' | 'error' | 'info' | 'warning', message: string) => {
-    setToast({ type, message, isVisible: true });
+  const calculateTotal = () => {
+    return dateGroups.reduce((total, group) => {
+      const cleaningTotal = group.cleaningServices.reduce((sum, service) => sum + service.amount, 0);
+      const checkinTotal = group.checkinServices.reduce((sum, service) => sum + service.amount, 0);
+      return total + cleaningTotal + checkinTotal;
+    }, 0);
   };
 
-  const addCheckin = () => {
-    addCheckinService();
+  // Action Button Handlers
+  const handleGenerateInvoice = () => {
+    // TODO: Implement invoice generation
+    alert('Invoice generation feature coming soon!');
   };
 
-  const handleCheckinSave = (data: any) => {
-    showToast('success', `Check-in saved for ${data.propertyAddress || 'property'}`);
-    console.log('Check-in data:', data);
-  };
-
-  const generateInvoice = () => {
-    // Validate required fields
-    if (!cleaner.name.trim()) {
-      showToast('error', 'Please enter the cleaner name');
-      return;
+  const handleResetForm = () => {
+    if (window.confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
+      setDateGroups([]);
+      setCleaner({
+        id: '',
+        name: '',
+        startDate: '',
+        endDate: ''
+      });
+      setSelectedServiceType('normal');
     }
-
-    if (services.some(service => !service.building)) {
-      showToast('error', 'Please select a building for all services');
-      return;
-    }
-
-    if (services.some(service => service.serviceAmount <= 0)) {
-      showToast('error', 'Please enter service amounts for all services');
-      return;
-    }
-
-         const totalAmount = services.reduce((sum, service) => {
-       const extraTimeCost = calculateExtraTimeCost(service.extraTime);
-       return sum + service.serviceAmount + extraTimeCost + service.itemsCost;
-     }, 0) + checkinServices.reduce((sum, service) => sum + service.amount, 0);
-     
-     const invoiceData: InvoiceData = {
-       cleaner,
-       services,
-       checkinServices,
-       totalAmount
-     };
-    
-    console.log('Invoice Data:', invoiceData);
-    setShowInvoicePreview(true);
-    showToast('success', `Invoice generated! Total: $${totalAmount.toFixed(2)}`);
-  };
-
-  const resetForm = () => {
-    setCleaner({
-      id: '1',
-      name: '',
-      startDate: '2025-08-03',
-      endDate: '2025-08-17'
-    });
-    setSelectedServiceType('normal');
-    setShowInvoicePreview(false);
-               setServices([{
-        id: '1',
-        type: 'normal',
-        date: '2025-08-03',
-        building: '',
-        unit: '',
-        serviceAmount: 0,
-        cleaningWithPartner: false,
-        partnerName: '',
-        extraTime: 'No extra time',
-        extrasDescription: '',
-        purchasedItems: '',
-        itemsCost: 0
-      }]);
-     setCheckinServices([]);
-    showToast('info', 'Form has been reset');
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg text-white">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <Logo />
+    <div className="min-h-screen bg-gradient-dark text-white">
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <Logo />
+        </div>
         
-        <FormSection title="Cleaner Information" required>
-          <CleanerInfo 
-            cleaner={cleaner} 
-            onCleanerChange={setCleaner}
+        <div className="mb-6">
+          <GoogleSheetsStatus 
+            onStatusChange={setIsGoogleSheetsConnected}
           />
-        </FormSection>
+        </div>
         
-                 <FormSection title="Service Type Selection" required>
-           <ServiceTypeSelector 
-             selectedType={selectedServiceType}
-             onTypeChange={setSelectedServiceType}
-           />
-         </FormSection>
-         
-         <FormSection title="Check-in Services" required>
-                       <CheckinServicesSection
-              checkinServices={checkinServices}
-              onCheckinServiceChange={handleCheckinServiceChange}
-              onRemoveCheckinService={handleRemoveCheckinService}
-              onAddCheckinService={addCheckinService}
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Cleaner Info */}
+          <CleanerInfo cleaner={cleaner} onCleanerChange={setCleaner} />
+          
+          {/* Service Type Selector */}
+          <ServiceTypeSelector 
+            selectedType={selectedServiceType}
+            onTypeChange={setSelectedServiceType}
+          />
+
+          {/* Date Groups */}
+          {dateGroups.length > 0 ? (
+            <div className="space-y-6">
+              {/* Add Work Day Button */}
+              <div className="text-center">
+                <button
+                  onClick={addDateGroup}
+                  className="group flex items-center gap-3 px-6 py-3 bg-gradient-primary text-white rounded-xl hover:shadow-glow-blue transition-all duration-300 hover:scale-105 active:scale-95 mx-auto"
+                >
+                  <Plus className="w-5 h-5" />
+                  <Calendar className="w-5 h-5" />
+                  Add Work Day
+                </button>
+              </div>
+              
+              {dateGroups.map((dateGroup) => (
+                <DateGroupAccordion
+                  key={dateGroup.id}
+                  dateGroup={dateGroup}
+                  onDateChange={handleDateChange}
+                  onAddCleaningService={addCleaningService}
+                  onAddCheckinService={addCheckinService}
+                  onUpdateCleaningService={updateCleaningService}
+                  onUpdateCheckinService={updateCheckinService}
+                  onRemoveCleaningService={removeCleaningService}
+                  onRemoveCheckinService={removeCheckinService}
+                  onRemoveDateGroup={removeDateGroup}
+                />
+              ))}
+            </div>
+          ) : (
+            /* Compact Empty State */
+            <div className="text-center py-8">
+              <div className="p-3 bg-dark-input rounded-xl inline-block mb-3">
+                <Calendar className="w-6 h-6 text-text-light" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">No Work Days</h3>
+              <p className="text-text-light mb-4">Start by adding a work day to organize your services</p>
+              <button
+                onClick={addDateGroup}
+                className="group flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl hover:shadow-glow-blue transition-all duration-300 hover:scale-105 active:scale-95 mx-auto"
+              >
+                <Plus className="w-5 h-5" />
+                <Calendar className="w-5 h-5" />
+                Add First Work Day
+              </button>
+            </div>
+          )}
+
+          {/* Total Summary */}
+          {dateGroups.length > 0 && (
+            <div className="glass-card rounded-xl p-6 border border-gray-700/50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Total Summary</h3>
+                  <p className="text-text-light">
+                    {dateGroups.reduce((total, group) => 
+                      total + group.cleaningServices.length + group.checkinServices.length, 0
+                    )} services in {dateGroups.length} {dateGroups.length === 1 ? 'day' : 'days'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-white">
+                    ${calculateTotal().toFixed(2)}
+                  </div>
+                  <div className="text-sm text-text-light">Total to charge</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons - Only show when there are work days */}
+          {dateGroups.length > 0 && (
+            <ActionButtons
+              onGenerateInvoice={handleGenerateInvoice}
+              onResetForm={handleResetForm}
             />
-         </FormSection>
-         
-         <FormSection title="Cleaning Services by Date" required>
-          {(() => {
-            // Group services by date
-            const servicesByDate = services.reduce((groups, service) => {
-              const date = service.date;
-              if (!groups[date]) {
-                groups[date] = [];
-              }
-              groups[date].push(service);
-              return groups;
-            }, {} as Record<string, CleaningService[]>);
-
-            // Sort dates
-            const sortedDates = Object.keys(servicesByDate).sort();
-
-                         return sortedDates.map(date => (
-               <DateServiceGroup
-                 key={date}
-                 date={date}
-                 services={servicesByDate[date]}
-                 onServiceChange={handleServiceChange}
-                 onRemoveService={handleRemoveService}
-                 onAddService={addServiceToDate}
-                 onRemoveDate={removeDate}
-                 onUpdateDate={updateDate}
-                                   selectedServiceType={selectedServiceType}
-                  startDate={cleaner.startDate}
-                  endDate={cleaner.endDate}
-               />
-             ));
-          })()}
-        </FormSection>
-
-                 {(services.length > 0 || checkinServices.length > 0) && (
-           <SummaryCard
-             totalAmount={
-               services.reduce((sum, service) => {
-                 const extraTimeCost = calculateExtraTimeCost(service.extraTime);
-                 return sum + service.serviceAmount + extraTimeCost + service.itemsCost;
-               }, 0) +
-               checkinServices.reduce((sum, service) => sum + service.amount, 0)
-             }
-             totalServices={services.length + checkinServices.length}
-             totalBuildings={new Set([
-               ...services.map(s => s.building).filter(b => b),
-               ...checkinServices.map(s => s.building).filter(b => b)
-             ]).size}
-             dateRange={`${cleaner.startDate} - ${cleaner.endDate}`}
-           />
-         )}
-        
-                 <ActionButtons
-           onAddDate={addNewDate}
-           onAddCheckin={addCheckin}
-           onGenerateInvoice={generateInvoice}
-           onResetForm={resetForm}
-         />
+          )}
+        </div>
       </div>
       
-             {showInvoicePreview && (
-         <InvoicePreview
-           invoiceData={{
-             cleaner,
-             services,
-             checkinServices,
-             totalAmount: services.reduce((sum, service) => {
-               const extraTimeCost = calculateExtraTimeCost(service.extraTime);
-               return sum + service.serviceAmount + extraTimeCost + service.itemsCost;
-             }, 0) + checkinServices.reduce((sum, service) => sum + service.amount, 0)
-           }}
-           onClose={() => setShowInvoicePreview(false)}
-         />
-       )}
 
-      <Toast
-        type={toast.type}
-        message={toast.message}
-        isVisible={toast.isVisible}
-        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))}
-      />
-
-      <CheckinModal
-        isVisible={showCheckinModal}
-        onClose={() => setShowCheckinModal(false)}
-        onSave={handleCheckinSave}
-        propertyName="AirBNB Property"
-      />
     </div>
   );
-};
+}
 
 export default App; 

@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Global Styles */
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -9,114 +13,415 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
-/* Custom scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #2d2d2d;
+  background: #1a1a2e;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3a3a3a;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a4a4a;
+  background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+}
+
+/* Glass Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-card {
+  background: rgba(26, 26, 46, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-secondary {
+  background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Button Effects */
+.btn-gradient {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-gradient:hover::before {
+  left: 100%;
 }
 
 /* Animations */
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.animate-shimmer {
+  animation: shimmer 2s infinite;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+/* Focus and Hover Styles */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-.animate-slide-in {
-  animation: slideIn 0.3s ease-out;
+.input-focus:focus {
+  transform: scale(1.02);
+  transition: all 0.3s ease;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-pulse-slow {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Focus styles for better accessibility */
-.focus-ring:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-/* Hover effects */
-.hover-lift {
-  transition: transform 0.2s ease-out;
-}
-
-.hover-lift:hover {
+.card-hover:hover {
   transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
-/* Loading states */
+/* Glow Effects */
+.glow-blue:hover {
+  box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+}
+
+.glow-purple:hover {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+}
+
+.glow-pink:hover {
+  box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
+}
+
+.glow-orange:hover {
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+}
+
+.glow-green:hover {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+.glow-red:hover {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+.glow-yellow:hover {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+/* Loading State */
 .loading {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.loading::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  border: 2px solid #1a1a2e;
+  border-top: 2px solid #4f46e5;
+  border-radius: 50%;
   width: 20px;
   height: 20px;
-  margin: -10px 0 0 -10px;
-  border: 2px solid #3b82f6;
-  border-radius: 50%;
-  border-top-color: transparent;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  /* Improve touch targets */
+  button, input, select, textarea {
+    min-height: 44px; /* Apple's recommended minimum */
+  }
+  
+  /* Better spacing for mobile */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Prevent zoom on input focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="date"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Smooth scrolling for iOS */
+  html {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better tap highlights */
+  button, a {
+    -webkit-tap-highlight-color: rgba(79, 70, 229, 0.3);
+  }
+  
+  /* Prevent text selection on buttons */
+  button {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Optimize animations for mobile */
+  * {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Larger touch targets for tablets */
+  button, input, select, textarea {
+    min-height: 48px;
+  }
+  
+  /* Better grid layouts for tablets */
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+  
+  /* Optimize font sizes for tablets */
+  body {
+    font-size: 16px;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.75rem;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+  }
+  
+  /* Better spacing for tablet forms */
+  .form-field {
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Optimize card layouts for tablets */
+  .glass-card {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Better button sizing for tablets */
+  .btn-tablet {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  /* Optimize navigation for tablets */
+  .nav-tablet {
+    padding: 1rem 1.5rem;
+  }
+  
+  /* Better modal sizing for tablets */
+  .modal-tablet {
+    max-width: 90vw;
+    max-height: 90vh;
+  }
+  
+  /* Optimize grid layouts for tablets */
+  .grid-tablet {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  /* Better touch feedback for tablets */
+  .touch-feedback-tablet {
+    min-height: 56px;
+    padding: 1rem;
+  }
+  
+  /* Optimize animations for tablets */
+  .animate-tablet {
+    transition-duration: 0.3s;
+  }
+  
+  /* Better scrollbar for tablets */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  /* Optimize focus states for tablets */
+  input:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+  }
+  
+  /* Better hover effects for tablets */
+  .hover-tablet:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Large Tablet Optimizations */
+@media (min-width: 1025px) and (max-width: 1366px) {
+  /* Optimize for large tablets */
+  .container {
+    max-width: 1200px;
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+  
+  /* Better grid layouts for large tablets */
+  .grid-large-tablet {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+  }
+  
+  /* Optimize font sizes for large tablets */
+  body {
+    font-size: 18px;
+  }
+  
+  /* Better spacing for large tablets */
+  .spacing-large-tablet {
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+/* Landscape Tablet Optimizations */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+  /* Optimize for landscape tablets */
+  .container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+  
+  /* Better grid layouts for landscape */
+  .grid-landscape {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  /* Optimize navigation for landscape */
+  .nav-landscape {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  /* Better modal sizing for landscape */
+  .modal-landscape {
+    max-width: 80vw;
+    max-height: 85vh;
+  }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .glass-card {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Optimize for touch devices */
+  button, input, select, textarea {
+    min-height: 48px;
+  }
+  
+  /* Better touch feedback */
+  .touch-feedback {
+    -webkit-tap-highlight-color: rgba(79, 70, 229, 0.3);
+  }
+  
+  /* Optimize hover states for touch */
+  .hover-touch:hover {
+    transform: none;
+  }
+  
+  /* Better focus states for touch */
+  .focus-touch:focus {
+    outline: 3px solid rgba(79, 70, 229, 0.5);
+    outline-offset: 2px;
+  }
+}
+
+/* Print optimizations */
+@media print {
+  /* Hide non-essential elements for printing */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Optimize colors for printing */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  /* Better page breaks */
+  .page-break {
+    page-break-before: always;
   }
 } 

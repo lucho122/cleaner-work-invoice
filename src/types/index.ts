@@ -5,41 +5,30 @@ export interface Cleaner {
   endDate: string;
 }
 
-export interface Building {
-  id: string;
-  name: string;
-  address: string;
-}
-
-export interface Unit {
-  id: string;
-  buildingId: string;
-  name: string;
-  servicePrice: number;
-}
-
 export interface CleaningService {
   id: string;
-  type: 'normal' | 'deep' | 'minor';
+  serviceType: ServiceType;
   date: string;
   building: string;
   unit: string;
-  serviceAmount: number;
+  amount: number;
   cleaningWithPartner: boolean;
   partnerName: string;
   extraTime: string;
   extrasDescription: string;
   purchasedItems: string;
   itemsCost: number;
+  isValid: boolean;
 }
 
 export interface CheckinService {
   id: string;
-  type: 'checkin';
+  serviceType: ServiceType;
   date: string;
   building: string;
   unit: string;
   amount: number;
+  isValid: boolean;
 }
 
 export interface InvoiceData {
@@ -49,4 +38,31 @@ export interface InvoiceData {
   totalAmount: number;
 }
 
-export type ServiceType = 'normal' | 'deep' | 'minor'; 
+export type ServiceType = 'normal' | 'deep' | 'minor';
+
+export interface Building {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+}
+
+export interface Unit {
+  id: string;
+  name: string;
+  buildingId: string;
+  servicePrice: number;
+  type: 'apartment' | 'condo' | 'loft' | 'house';
+  bedrooms: number;
+  bathrooms: number;
+  squareFootage: number;
+}
+
+export interface DateGroup {
+  id: string;
+  date: string;
+  cleaningServices: CleaningService[];
+  checkinServices: CheckinService[];
+} 
